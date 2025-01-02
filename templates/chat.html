@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-8 col-xl-6">
+                <div class="card">
+                    <!-- Header Section -->
+                    <div class="card-header text-white bg-primary d-flex align-items-center">
+                        <div class="img_cont">
+                            <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img" alt="Chatbot Avatar">
+                        </div>
+                        <div class="user_info ml-3">
+                            <h5 class="mb-0">Medical Chatbot</h5>
+                            <small>Ask me anything!</small>
+                        </div>
+                    </div>
+
+                    <!-- Messages Section -->
+                    <div id="messageFormeight" class="card-body msg_card_body bg-light" style="overflow-y: auto; height: 400px;">
+                        <!-- Messages will appear here -->
+                    </div>
+
+                    <!-- Footer Section -->
+                    <div class="card-footer">
+                        <form id="messageArea" class="d-flex">
+                            <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control" required>
+                            <button type="submit" id="send" class="btn btn-primary ml-2">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#messageArea").on("submit", function (event) {
+                event.preventDefault();
+
+                const date = new Date();
+                const hour = date.getHours();
+                const minute = date.getMinutes();
+                const str_time = `${hour}:${minute < 10 ? '0' + minute : minute}`;
+
+                var rawText = $("#text").val();
+                $("#text").val("");
+
+                var userHtml = `
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="msg_cotainer_send bg-primary text-white p-2 rounded">
+                            ${rawText}
+                            <span class="msg_time_send text-muted small ml-2">${str_time}</span>
+                        </div>
+                        <div class="img_cont_msg ml-2">
+                            <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" alt="User Avatar">
+                        </div>
+                    </div>`;
+                $("#messageFormeight").append(userHtml);
+
+                // Add loading animation
+                var loadingHtml = `
+                    <div id="loading" class="d-flex justify-content-start mb-3">
+                        <div class="img_cont_msg mr-2">
+                            <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg" alt="Chatbot Avatar">
+                        </div>
+                        <div class="msg_cotainer bg-secondary text-white p-2 rounded">
+                            <i class="fas fa-spinner fa-spin"></i> Typing...
+                        </div>
+                    </div>`;
+                $("#messageFormeight").append(loadingHtml);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/get",
+                    data: { msg: rawText },
+                }).done(function (data) {
+                    // Remove the loading animation
+                    $("#loading").remove();
+
+                    var botHtml = `
+                        <div class="d-flex justify-content-start mb-3">
+                            <div class="img_cont_msg mr-2">
+                                <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg" alt="Chatbot Avatar">
+                            </div>
+                            <div class="msg_cotainer bg-secondary text-white p-2 rounded">
+                                ${data}
+                                <span class="msg_time text-muted small ml-2">${str_time}</span>
+                            </div>
+                        </div>`;
+                    $("#messageFormeight").append(botHtml);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
